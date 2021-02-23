@@ -5,6 +5,7 @@ class Jugador:
         self.nombre=nombre
         self.cartas=[]
         self.imagen=''
+        self.bazas=0
         self.puntos=0
         self.jugada=None
     def __str__(self):
