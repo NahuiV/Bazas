@@ -10,7 +10,7 @@ class Jugador:
         self.jugada=None
     def __str__(self):
         text=str(self.nombre)
-        for a  in self.cartas:
+        for a in self.cartas:
             text=text+','+str(a)
         return text
     def agregar_cartas(self,carta):
@@ -18,4 +18,6 @@ class Jugador:
     def nueva_mano(self):
         return 0
     def pedir_jugada(self):
-        self.jugada=self.cartas[random.shuffle(len(self.cartas))]
+        apuesta=gamelib.input("Elija la carta: ")
+        self.cartas.pop(self.cartas.index(apuesta))
+        self.jugada=apuesta

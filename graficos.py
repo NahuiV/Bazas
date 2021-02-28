@@ -1,17 +1,20 @@
 import gamelib
 from jugador import Jugador
-def dibujar_tablero():
+def dibujar_tablero(juego):
     gamelib.draw_image('C:/Users/nahue/Desktop/Bazas/TABLERO.gif',0,0)
-def dibujar_cartas(juego):
-    x=0
-    for jugador in juego[0]:
-        mano=jugador.cartas
+    jugadores=juego.lista_jugadores
+    j1,j2=jugadores
+    print(j1)
+    for x in range(420, 813, 50):
+        mano=j1.cartas
         for carta in mano:
-            gamelib.draw_image('C:/Users/nahue/Desktop/Bazas/cartas/'+carta+'.gif',x,0)
-            x=x+40
-        break
+            gamelib.draw_image('C:/Users/nahue/Desktop/Bazas/cartas/'+carta+'.gif', x, 600)
+    
+    for x2 in range(420, 813, 30):
+        mano=j2.cartas
+        for carta in mano:
+            gamelib.draw_image('C:/Users/nahue/Desktop/Bazas/cartas/'+carta+'.gif', x2, 30)
 def puntuaciones_partida():
     return 0
 def ronda():
     return 0
-    

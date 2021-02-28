@@ -9,17 +9,16 @@ def verificar_opciones(opcion):
 def mostrar_ganador(juego):
     return 0
 def mostrar_estado_juego(juego):
-    return 0
+    graficos.dibujar_tablero(juego)
 def main():
     bazas=Juego()
-    gamelib.resize(1235, 720)
-    graficos.dibujar_tablero()
+    gamelib.resize(1235, 700)
     cantidad_jugadores=gamelib.input('Ingrese la cantidad de jugadores, puede ser entre 2 o 4: ')
     bazas.inicializar_juego(int(cantidad_jugadores))
     while not bazas.terminado():
-        mostrar_estado_juego(bazas)
         bazas.mezclar_mazo()
         bazas.repartir_cartas()
+        mostrar_estado_juego(bazas)
         bazas.pedir_apuestas()
         while not bazas.ronda_terminada():
             mostrar_estado_juego(bazas)

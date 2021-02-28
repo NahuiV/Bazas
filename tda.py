@@ -1,3 +1,4 @@
+import random
 class Pila:
     def __init__(self):
         self.mazo=[]

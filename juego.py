@@ -14,21 +14,34 @@ class Juego:
         self.triunfo=''
 
     def mezclar_mazo(self):
-        for _ in range(0,4):
-            random.shuffle(self.mazo)
-        mazo_nuevo=Pila()
-        for carta in self.mazo:
-            mazo_nuevo.apilar(carta)
-        self.mazo=mazo_nuevo
+        mazo_aux = []   
+        for _ in range(0,self.mazo.cantidad_elementos()):
+            mazo_aux.append(self.mazo.desapilar())
+        
+        random.shuffle(mazo_aux) 
+    
+        for carta in mazo_aux:
+            self.mazo.apilar(carta)
 
     def crear_mazo(self):
-        palos=('D','H','S','C')
-        valor=(2,3,4,5,6,7,8,9,'J','Q','K','A')
+        mazo_nuevo = Pila()
+        
+        palos = ('D', 'H', 'S', 'C')
+        valor = (2, 3, 4, 5, 6, 7, 8, 9, 'J', 'Q', 'K', 'A')
         for palo in palos:
             for numero in valor:
-                self.mazo.append(str(numero)+str(palo))
+                mazo_nuevo.apilar(str(numero) + str(palo))
+        self.mazo = mazo_nuevo
                 
     def inicializar_juego(self,cantidad_jugadores):
+        mazo_nuevo = Pila()
+        
+        palos = ('D', 'H', 'S', 'C')
+        valor = (2, 3, 4, 5, 6, 7, 8, 9, 'J', 'Q', 'K', 'A')
+        for palo in palos:
+            for numero in valor:
+                mazo_nuevo.apilar(str(numero) + str(palo))
+        self.mazo = mazo_nuevo
         self.cantidad_jugadores=cantidad_jugadores
         for numero_jugador in range(1,cantidad_jugadores+1):
             nombre_jugador=gamelib.input("Ingrese nombre del jugador numero "+str(numero_jugador))
@@ -60,7 +73,8 @@ class Juego:
             if apuesta==jugador.bazas:
                 jugador.puntos+=10+(5*self.ronda_actual)
             jugador.bazas=0
-        
+        self.lista_jugadores=self.lista_jugadores[1:] + self.lista_jugadores[:1]    
+    
     def determinar_ganador_ronda(self):
         valor=(2,3,4,5,6,7,8,9,'J','Q','K','A')
         indice=[]
@@ -109,7 +123,7 @@ class Juego:
                     jugador_ganador.bazas+=1
                     self.manos_jugada+=1
                     break 
-        
+    
     def terminado(self):
         if self.ronda_actual==self.rondas:
             return True
@@ -123,7 +137,4 @@ class Juego:
             return True
         return False
 
-    def pedir_jugada(self):
-
-        return 0
     
