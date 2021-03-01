@@ -12,5 +12,10 @@ class Pila:
     def es_vacia(self):
         """ Devuelve True si la lista está vacía, False si no. """
         return self.mazo == []
+    def __str__(self):
+        l=[]
+        for elemento in self.mazo:
+            print(elemento)
+        return l
     def cantidad_elementos(self):
         return len(self.mazo)

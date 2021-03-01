@@ -9,10 +9,12 @@ def verificar_opciones(opcion):
 def mostrar_ganador(juego):
     return 0
 def mostrar_estado_juego(juego):
-    graficos.dibujar_tablero(juego)
+    graficos.dibujar_tablero()
+    graficos.dibujar_cartas(juego)
 def main():
     bazas=Juego()
     gamelib.resize(1235, 700)
+    graficos.dibujar_tablero()
     cantidad_jugadores=gamelib.input('Ingrese la cantidad de jugadores, puede ser entre 2 o 4: ')
     bazas.inicializar_juego(int(cantidad_jugadores))
     while not bazas.terminado():

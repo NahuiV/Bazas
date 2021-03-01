@@ -1,7 +1,9 @@
 import gamelib
 from jugador import Jugador
-def dibujar_tablero(juego):
+def dibujar_tablero():
     gamelib.draw_image('C:/Users/nahue/Desktop/Bazas/TABLERO.gif',0,0)
+
+def dibujar_cartas(juego):
     jugadores=juego.lista_jugadores
     j1,j2=jugadores
     print(j1)

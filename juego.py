@@ -5,43 +5,31 @@ import gamelib
 class Juego:
     def __init__(self):
         self.lista_jugadores=[]
-        self.mazo=[]
+        self.mazo=Pila()
         self.cantidad_jugadores=0
         self.rondas=12
-        self.ronda_actual=0
+        self.ronda_actual=1
         self.manos_jugada=0
         self.apuestas=None
         self.triunfo=''
 
     def mezclar_mazo(self):
-        mazo_aux = []   
+        mazo_aux = []
         for _ in range(0,self.mazo.cantidad_elementos()):
             mazo_aux.append(self.mazo.desapilar())
-        
+
         random.shuffle(mazo_aux) 
-    
+        
         for carta in mazo_aux:
             self.mazo.apilar(carta)
-
-    def crear_mazo(self):
-        mazo_nuevo = Pila()
-        
-        palos = ('D', 'H', 'S', 'C')
-        valor = (2, 3, 4, 5, 6, 7, 8, 9, 'J', 'Q', 'K', 'A')
-        for palo in palos:
-            for numero in valor:
-                mazo_nuevo.apilar(str(numero) + str(palo))
-        self.mazo = mazo_nuevo
                 
     def inicializar_juego(self,cantidad_jugadores):
-        mazo_nuevo = Pila()
-        
         palos = ('D', 'H', 'S', 'C')
         valor = (2, 3, 4, 5, 6, 7, 8, 9, 'J', 'Q', 'K', 'A')
         for palo in palos:
             for numero in valor:
-                mazo_nuevo.apilar(str(numero) + str(palo))
-        self.mazo = mazo_nuevo
+                self.mazo.apilar((str(numero) + str(palo)))
+
         self.cantidad_jugadores=cantidad_jugadores
         for numero_jugador in range(1,cantidad_jugadores+1):
             nombre_jugador=gamelib.input("Ingrese nombre del jugador numero "+str(numero_jugador))
@@ -55,14 +43,14 @@ class Juego:
 
     def pedir_apuestas(self):
         apuestas={}
-        suma_bazas=0    
+        suma_bazas=0
         for jugador in self.lista_jugadores:
             apuesta=gamelib.input('Cuantas bazas vas a obtener '+jugador.nombre)
-            if jugador==self.lista_jugadores[-1]:
-                while True:
-                    if(suma_bazas+int(apuesta))!=self.ronda_actual:
-                        break
-                    apuesta=gamelib.input('Cuantas bazas vas a obtener '+jugador.nombre)
+            #if jugador==self.lista_jugadores[-1]:
+                #while l==True:
+                    #if(suma_bazas+int(apuesta))!=self.ronda_actual:
+                        #l=False
+                    #apuesta=gamelib.input('Cuantas bazas vas a obtener '+jugador.nombre)
             apuestas[jugador.nombre]=apuesta
             suma_bazas=+int(apuesta)
             self.apuestas=apuestas
@@ -134,7 +122,7 @@ class Juego:
             for jugador in self.lista_jugadores:
                 for _ in range(0,self.ronda_actual):
                     self.mazo.apilar(jugador.cartas.desapilar())
-            return True
-        return False
+            return False
+        return True
 
     
