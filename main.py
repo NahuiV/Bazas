@@ -2,10 +2,10 @@ from jugador import Jugador
 import gamelib
 import graficos
 from juego import Juego
-def verificar_opciones(opcion):
-    if opcion<2 or opcion>4:
+def verificar_cantidad_jugadores(opcion):
+    if ((opcion<2 or opcion>4)):
         return False
-    return True
+    return True 
 def mostrar_ganador(juego):
     return 0
 def mostrar_estado_juego(juego):

@@ -18,6 +18,7 @@ class Jugador:
     def nueva_mano(self):
         return 0
     def pedir_jugada(self):
+        print(self.cartas)
         apuesta=gamelib.input("Elija la carta: ")
         self.cartas.pop(self.cartas.index(apuesta))
         self.jugada=apuesta
