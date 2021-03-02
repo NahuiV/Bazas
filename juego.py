@@ -15,6 +15,7 @@ class Juego:
 
     def mezclar_mazo(self):
         mazo_aux = []
+
         for _ in range(0,self.mazo.cantidad_elementos()):
             mazo_aux.append(self.mazo.desapilar())
 
@@ -22,8 +23,11 @@ class Juego:
         
         for carta in mazo_aux:
             self.mazo.apilar(carta)
+
         self.ronda_actual+=1
+
         self.manos_jugada=0
+
     def inicializar_juego(self,cantidad_jugadores):
         palos = ('D', 'H', 'S', 'C')
         valor = ('2','3','4','5','6','7','8','9', 'J', 'Q', 'K', 'A')
@@ -33,12 +37,16 @@ class Juego:
 
         self.cantidad_jugadores=cantidad_jugadores
         for numero_jugador in range(1,cantidad_jugadores+1):
-            nombre_jugador=gamelib.input("Ingrese nombre del jugador numero "+str(numero_jugador))
-            jugador=Jugador(nombre_jugador,0)
-            self.lista_jugadores.append(jugador)
+            while True:
+                nombre_jugador=gamelib.input("Ingrese nombre del jugador numero "+str(numero_jugador))
+                if ((nombre_jugador==None )or len(nombre_jugador==0)):
+                    gamelib.say('Se necesita un nombre para poder continuar,porfavor vuelva a ingresar')
+                else:
+                    jugador=Jugador(nombre_jugador,0)
+                    self.lista_jugadores.append(jugador)
+                    break
 
     def repartir_cartas(self):
-        print(self.ronda_actual)
         for _ in range(0,self.ronda_actual):
             for jugador in self.lista_jugadores:
                 jugador.agregar_cartas(self.mazo.desapilar())
@@ -48,10 +56,21 @@ class Juego:
 
     def pedir_apuestas(self):
         apuestas={}
+        suma_apuesta=0
         for contador,jugador in enumerate(self.lista_jugadores):
-            apuesta=gamelib.input('Cuantas bazas vas a obtener '+jugador.nombre)
-            if contador==0:
-                apuestas[jugador.nombre]=apuesta
+            while True:
+                apuesta=gamelib.input('Cuantas bazas vas a obtener '+jugador.nombre)
+                apuesta=self.validar_apuesta(jugador.nombre,apuesta)
+                if contador==self.cantidad_jugadores-1:
+                    if suma_apuesta+int(apuesta)==self.ronda_actual:
+                        gamelib.say('La apuesta ingresada iguala el numero de ronda actual,ingrese un valor entre 0 y '+ str(self.ronda_actual)+'')
+                    else:
+                        apuestas[jugador.nombre]=int(apuesta)
+                        break
+                else:
+                    apuestas[jugador.nombre]=int(apuesta)
+                    suma_apuesta+=int(apuesta)
+                    break
         self.apuestas=apuestas
 
     def contabilizar_puntos_ronda(self):
@@ -63,7 +82,7 @@ class Juego:
         self.lista_jugadores=self.lista_jugadores[1:] + self.lista_jugadores[:1]    
     
     def determinar_ganador_ronda(self):
-        valor=(2,3,4,5,6,7,8,9,'J','Q','K','A')
+        valor = ('2','3','4','5','6','7','8','9', 'J', 'Q', 'K', 'A')
         indice=[]
         cartas_palo_principal=[]
         cartas_palo_triunfo=[]
@@ -129,4 +148,12 @@ class Juego:
             return True
         return False
 
-    
+    def validar_apuesta(self,jugador,apuesta):
+        while True:
+            if apuesta==None or apuesta.isdigit()==False:
+                gamelib.say('Opcion incorrecta, vuelva a ingresar ')
+                apuesta=gamelib.input('Cuantas bazas vas a obtener '+jugador)
+            else:
+                break
+        return int(apuesta)
+
