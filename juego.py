@@ -24,7 +24,6 @@ class Juego:
             self.mazo.apilar(carta)
         self.ronda_actual+=1
         self.manos_jugada=0
-        print('mezclo mazo')
     def inicializar_juego(self,cantidad_jugadores):
         palos = ('D', 'H', 'S', 'C')
         valor = ('2','3','4','5','6','7','8','9', 'J', 'Q', 'K', 'A')
@@ -44,14 +43,15 @@ class Juego:
             for jugador in self.lista_jugadores:
                 jugador.agregar_cartas(self.mazo.desapilar())
         self.triunfo=self.mazo.desapilar()
-        print('repartio cartas')
         for jugador in self.lista_jugadores:
             print(jugador.cartas)
+
     def pedir_apuestas(self):
         apuestas={}
-        for jugador in self.lista_jugadores:
+        for contador,jugador in enumerate(self.lista_jugadores):
             apuesta=gamelib.input('Cuantas bazas vas a obtener '+jugador.nombre)
-            apuestas[jugador.nombre]=apuesta
+            if contador==0:
+                apuestas[jugador.nombre]=apuesta
         self.apuestas=apuestas
 
     def contabilizar_puntos_ronda(self):
@@ -107,6 +107,7 @@ class Juego:
                     self.asignar_baza(ronda,carta)
                     self.manos_jugada+=1
                     break 
+        
     def terminado(self):
         if self.ronda_actual==self.rondas:
             return True
