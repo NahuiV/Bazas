@@ -39,7 +39,7 @@ class Juego:
         for numero_jugador in range(1,cantidad_jugadores+1):
             while True:
                 nombre_jugador=gamelib.input("Ingrese nombre del jugador numero "+str(numero_jugador))
-                if ((nombre_jugador==None )or len(nombre_jugador==0)):
+                if ((nombre_jugador==None )or (len(nombre_jugador)==0)):
                     gamelib.say('Se necesita un nombre para poder continuar,porfavor vuelva a ingresar')
                 else:
                     jugador=Jugador(nombre_jugador,0)
