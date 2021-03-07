@@ -1,5 +1,6 @@
 import gamelib
 import random
+import graficos
 class Jugador:
     def __init__(self,nombre,cartas):
         self.nombre=nombre

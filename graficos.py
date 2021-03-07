@@ -37,7 +37,7 @@ def calcular_y_inicial(cartas):
     else:
         y=medio_Y-((len(cartas)/2)*py_y)
     return y
-c
+
 def calcular_x_inicial(cartas):
     medio_H=1235/2
     px_x=50
@@ -47,6 +47,7 @@ def calcular_x_inicial(cartas):
     else:
         x=medio_H-((len(cartas)/2)*px_x)
     return x
+    
 def es_par(numero):
     if numero % 2==0:
         return True
