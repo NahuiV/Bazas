@@ -1,7 +1,8 @@
-from jugador import Jugador
+import jugador
 import gamelib
 import graficos
 from juego import Juego
+
 def pedir_opcion():
     while True:
         opcion=gamelib.input('Ingrese la cantidad de jugadores, puede ser entre 2 o 4: ')
@@ -12,15 +13,21 @@ def pedir_opcion():
     return int(opcion)
 
 def mostrar_ganador(juego):
-    return 0
+    jugadores=juego.lista_jugadores
+    puntajes=[]
+    for jugador in jugadores:
+        puntajes.append((jugador.puntos,jugador.nombre))
+    puntajes.sort(key=lambda x: x[0])
+    graficos.graficar_ganador(puntajes)
 
 def mostrar_estado_juego(juego):
     graficos.dibujar_tablero()
     graficos.dibujar_cartas(juego)
+    graficos.dibujar_carta_centro(juego)
     
 def main():
     bazas=Juego()
-    gamelib.resize(1235, 700)
+    gamelib.resize(1230, 700)
     graficos.dibujar_tablero()
     bazas.inicializar_juego(pedir_opcion())
     while not bazas.terminado():
@@ -32,6 +39,7 @@ def main():
             mostrar_estado_juego(bazas)
             for jugador in bazas.lista_jugadores:
                 jugador.pedir_jugada()
+                bazas.rotar_jugadores()
                 mostrar_estado_juego(bazas)
             bazas.determinar_ganador_ronda()
         bazas.contabilizar_puntos_ronda()

@@ -1,7 +1,6 @@
 """
 Gamelib is a pure-Python single-file library/framework for writing simple games. It is
 intended for educational purposes (e.g. to be used in basic programming courses).
-
 https://github.com/dessaya/python-gamelib
 """
 
@@ -21,6 +20,10 @@ class _TkWindow(tk.Tk):
     initialized = threading.Event()
     commands = Queue()
 
+    busy_count = 0
+    idle = threading.Event()
+    idle.set()
+
     def __init__(self):
         super().__init__()
 
@@ -37,12 +40,12 @@ class _TkWindow(tk.Tk):
         for event_type in EventType:
             self.bind(f"<{event_type.name}>", self.handle_event)
         self.bind(f"<<notify>>", self.process_commands)
-        self.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.protocol("WM_DELETE_WINDOW", self.close)
 
         self.canvas.focus_set()
         self.after_idle(self.process_commands)
 
-    def on_closing(self):
+    def close(self):
         self.closed = True
         self.quit()
         self.update()
@@ -52,12 +55,19 @@ class _TkWindow(tk.Tk):
             self.event_generate('<<notify>>', when='tail')
 
     def process_commands(self, *args):
-        while True:
-            try:
-                method, *args = _TkWindow.commands.get(False)
-                getattr(self, method)(*args)
-            except Empty:
-                break
+        _TkWindow.busy_count += 1
+        _TkWindow.idle.clear()
+        try:
+            while True:
+                try:
+                    method, *args = _TkWindow.commands.get(False)
+                    getattr(self, method)(*args)
+                except Empty:
+                    break
+        finally:
+            _TkWindow.busy_count -= 1
+            if _TkWindow.busy_count == 0:
+                _TkWindow.idle.set()
 
     def handle_event(self, tkevent):
         _GameThread.events.put(Event(tkevent))
@@ -138,7 +148,7 @@ def _audio_init():
                 windll.winmm.mciGetErrorStringA(errorCode, errorBuffer, 254)
                 exceptionMessage = ('\n    Error ' + str(errorCode) + ' for command:'
                                     '\n        ' + command.decode() +
-                                    '\n    ' + errorBuffer.value.decode())
+                                    '\n    ' + errorBuffer.value.decode(getfilesystemencoding(), 'ignore'))
                 raise PlaysoundException(exceptionMessage)
             return buf.value
 
@@ -195,12 +205,10 @@ def _audio_init():
     def play_sound(sound):
         """
         Play a sound located at the given path.
-
         Example:
             ```
             gamelib.play_sound('sound/jump.wav')
             ```
-
         Note:
             The only sound format that is supported accross all platforms (Windows/Mac/Linux)
             is WAV.
@@ -232,7 +240,7 @@ class _GameThread(threading.Thread):
         except Exception as e:
             sys.excepthook(*sys.exc_info())
         finally:
-            self.send_command_to_tk('destroy', notify=True)
+            self.send_command_to_tk('close', notify=True)
 
     def notify_tk(self):
         self.wait_for_tk()
@@ -256,18 +264,14 @@ class _GameThread(threading.Thread):
         """
         Wait until the next `Event`: a key is pressed/released, the mouse is moved, etc,
         and return it.
-
         This function is normally used in combination with `gamelib.is_alive`,
         in turn-based games.
-
         Args:
             event_type: If an `EventType` is passed, the function will ignore any
                         events that are not of this type. (It will still return `None`
                         when the game is closed).
-
         Returns:
             An `Event`, or `None` if the user closed the game window.
-
         Example:
             ```
             while gamelib.is_alive():
@@ -286,9 +290,7 @@ class _GameThread(threading.Thread):
     def get_events(self):
         """
         Get the list of `Event`s that happened since the last call to `get_events`.
-
         This function is normally used in combination with `loop`, in action games.
-
         Example:
             ```
             while gamelib.loop(fps=30):
@@ -317,9 +319,7 @@ class _GameThread(threading.Thread):
     def draw_begin(self):
         """
         Clear the window.
-
         Any call to `draw_*` should be between `draw_begin` and `draw_end`.
-
         Example:
             ```
             gamelib.draw_begin()
@@ -327,17 +327,16 @@ class _GameThread(threading.Thread):
             gamelib.draw_end()
             ```
         """
+        _TkWindow.idle.wait()
         self.send_command_to_tk('clear')
 
     def draw_image(self, path, x, y):
         """
         Draw an image located at `path` in the coordinates `x, y`.
-
         Example:
             ```
             gamelib.draw_image('images/player.gif', 10, 10)
             ```
-
         Note:
             The only image formats that are supported accross all platforms (Windows/Mac/Linux)
             are GIF and PPM/PGM/PBM.
@@ -347,18 +346,14 @@ class _GameThread(threading.Thread):
     def draw_text(self, text, x, y, size=12, **options):
         """
         Draw some `text` at coordinates `x, y` with the given `size`.
-
         Some of the supported options are:
-
         * `fill`: Fill color. It can be named colors like `'red'`, `'white'`, etc,
           or a specific color in `'#rrggbb'` hexadecimal format.
         * `anchor`: Where to place the text relative to the given position.
           It be any combination of `n` (North), `s` (South), `e`
           (East), `w` (West) and `c` (center). Default is `c`.
-
         To see all supported options, see the documentation for
         [`Tkinter.Canvas.create_text`](https://effbot.org/tkinterbook/canvas.htm#Tkinter.Canvas.create_text-method).
-
         Example:
             ```
             gamelib.draw_text('Hello world!', 10, 10, fill='red', anchor='nw')
@@ -370,10 +365,8 @@ class _GameThread(threading.Thread):
         """
         Draw an arc, pieslice, or chord in the bounding box between points `x1, y1` and
         `x2, y2`.
-
         To see all supported options, see the documentation for
         [`Tkinter.Canvas.create_arc`](https://effbot.org/tkinterbook/canvas.htm#Tkinter.Canvas.create_arc-method).
-
         Example:
             ```
             gamelib.draw_arc(10, 10, 20, 20, outline='white', fill='red')
@@ -384,10 +377,8 @@ class _GameThread(threading.Thread):
     def draw_line(self, x1, y1, x2, y2, **options):
         """
         Draw a straight line between points `x1, y1` and `x2, y2`.
-
         To see all supported options, see the documentation for
         [`Tkinter.Canvas.create_line`](https://effbot.org/tkinterbook/canvas.htm#Tkinter.Canvas.create_line-method).
-
         Example:
             ```
             gamelib.draw_line(10, 10, 30, 20, fill='blue', width=2)
@@ -398,10 +389,8 @@ class _GameThread(threading.Thread):
     def draw_oval(self, x1, y1, x2, y2, **options):
         """
         Draw an ellipse in the bounding box between points `x1, y1` and `x2, y2`.
-
         To see all supported options, see the documentation for
         [`Tkinter.Canvas.create_oval`](https://effbot.org/tkinterbook/canvas.htm#Tkinter.Canvas.create_oval-method).
-
         Example:
             ```
             gamelib.draw_oval(10, 10, 30, 20, outline='white', fill='red')
@@ -414,10 +403,8 @@ class _GameThread(threading.Thread):
         Draw a polygon with vertices in the given `points` coordinates list. The list must have
         an even amount of numbers; each pair determines a vertex. The last vertex is automatically
         joined with the first one with a segment.
-
         To see all supported options, see the documentation for
         [`Tkinter.Canvas.create_polygon`](https://effbot.org/tkinterbook/canvas.htm#Tkinter.Canvas.create_polygon-method).
-
         Example:
             ```
             gamelib.draw_polygon([10, 10, 30, 20, 0, 40], outline='white', fill='red')
@@ -428,10 +415,8 @@ class _GameThread(threading.Thread):
     def draw_rectangle(self, x1, y1, x2, y2, **options):
         """
         Draw an rectangle in the bounding box between points `x1, y1` and `x2, y2`.
-
         To see all supported options, see the documentation for
         [`Tkinter.Canvas.create_rectangle`](https://effbot.org/tkinterbook/canvas.htm#Tkinter.Canvas.create_rectangle-method).
-
         Example:
             ```
             gamelib.draw_rectangle(10, 10, 30, 20, outline='white', fill='red')
@@ -442,9 +427,7 @@ class _GameThread(threading.Thread):
     def draw_end(self):
         """
         Refresh the window.
-
         Any call to `draw_*` should be between `draw_begin` and `draw_end`.
-
         Example:
             ```
             gamelib.draw_begin()
@@ -467,10 +450,8 @@ class _GameThread(threading.Thread):
     def input(self, prompt):
         """
         Ask the user to enter a text value.
-
         Args:
             prompt: A message to display.
-
         Returns:
             A string containing the value that the user typed. `None` if the user
             clicked on Cancel instead of OK.
@@ -482,7 +463,6 @@ class _GameThread(threading.Thread):
     def is_alive(self):
         """
         Returns True if the game window is open.
-
         Example:
             ```
             while gamelib.is_alive():
@@ -498,10 +478,8 @@ class _GameThread(threading.Thread):
     def loop(self, fps=30):
         """
         When used in a `while` loop, the body will be executed `fps` times per second.
-
         Returns:
             `True` if the game window is still open, `False` otherwise.
-
         Example:
             ```
             while gamelib.loop(fps=30):
@@ -543,14 +521,13 @@ play_sound = _audio_init()
 def _sigint_handler(sig, frame):
     w = _TkWindow.instance
     if w:
-        w.on_closing()
+        w.close()
     else:
         raise KeyboardInterrupt()
 
 def init(game_main, args=None):
     """
     Initialize gamelib.
-
     Args:
         game_main: Your `main` function.
         args: List of arguments to be passed to the `main` function, or `None`.
@@ -594,20 +571,16 @@ class EventType(Enum):
 class Event:
     """
     Represents an event generated by the user.
-
     Attributes:
         type: An `EventType`.
         key: A key that has been pressed/released.
         mouse_button: 0, 1 or 2 for left, right and middle mouse buttons respectively.
         x: The current mouse horizontal position, in pixels.
         y: The current mouse vertical position, in pixels.
-
     This is actually a wrapper for the
     [Tkinter Event class](https://effbot.org/tkinterbook/tkinter-events-and-bindings.htm#events).
     Any of the `tk.Event` attributes can be accessed through this object.
-
     ## See also
-
     `wait`, `get_events`
     """
 
@@ -615,7 +588,7 @@ class Event:
         self.tkevent = tkevent
 
     def __getattr__(self, k):
-        if k == 'type': return EventType[str(self.tkevent.type)]
+        if k == 'type': return EventType[self.tkevent.type.name]
         if k == 'key': return self.tkevent.keysym
         if k == 'mouse_button': return self.tkevent.num
         return getattr(self.tkevent, k)

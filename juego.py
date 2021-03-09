@@ -1,7 +1,10 @@
 import random
 from tda import *
-from jugador import *
+from jugador import Jugador
 import gamelib
+LARGO,ANCHO=1230,700
+PIXELES_CARTA=50
+
 class Juego:
     def __init__(self):
         self.lista_jugadores=[]
@@ -11,7 +14,7 @@ class Juego:
         self.ronda_actual=0
         self.manos_jugada=0
         self.apuestas=None
-        self.triunfo=''
+        self.triunfo=None
 
     def mezclar_mazo(self):
         mazo_aux = []
@@ -27,7 +30,13 @@ class Juego:
         self.ronda_actual+=1
 
         self.manos_jugada=0
-
+    
+    def rotar_jugadores(self, n=-1):
+        if len(self.lista_jugadores) == 0:
+            self.lista_jugadores = self.lista_jugadores
+        n = -n % len(self.lista_jugadores)
+        self.lista_jugadores = self.lista_jugadores[n:] + self.lista_jugadores[:n]
+    
     def inicializar_juego(self,cantidad_jugadores):
         palos = ('D', 'H', 'S', 'C')
         valor = ('2','3','4','5','6','7','8','9', 'J', 'Q', 'K', 'A')
@@ -50,9 +59,15 @@ class Juego:
         for _ in range(0,self.ronda_actual):
             for jugador in self.lista_jugadores:
                 jugador.agregar_cartas(self.mazo.desapilar())
-        self.triunfo=self.mazo.desapilar()
-        for jugador in self.lista_jugadores:
-            print(jugador.cartas)
+        
+        if self.ronda_actual==self.rondas:
+            while True:
+                self.triunfo=self.mazo.desapilar()
+                if self.triunfo[1]=='H':
+                    break
+                self.mazo.apilar(self.triunfo)
+        else:
+            self.triunfo=self.mazo.desapilar()
 
     def pedir_apuestas(self):
         apuestas={}
@@ -125,8 +140,8 @@ class Juego:
                 if carta[0]==valor[indice[0]]:
                     self.asignar_baza(ronda,carta)
                     self.manos_jugada+=1
-                    break 
-        
+                    break
+
     def terminado(self):
         if self.ronda_actual==self.rondas:
             return True
@@ -141,16 +156,18 @@ class Juego:
     def ronda_terminada(self):
         if self.ronda_actual==self.manos_jugada:
             for jugador in self.lista_jugadores:
-                for carta in jugador.cartas:
+                for carta in jugador.cartas_usadas:
                     self.mazo.apilar(carta)
-                    jugador.cartas.pop(jugador.cartas.index(carta))
+                jugador.cartas_usadas=[]
             self.manos_jugada+=1
+            self.mazo.apilar(self.triunfo)
+            self.triunfo=None
             return True
         return False
 
-    def validar_apuesta(self,jugador,apuesta):
+    def validar_apuesta(self,jugador,apuesta):  
         while True:
-            if apuesta==None or apuesta.isdigit()==False:
+            if apuesta==None or apuesta.isdigit()==False or (int(apuesta) > self.ronda_actual) or (0>int(apuesta)):
                 gamelib.say('Opcion incorrecta, vuelva a ingresar ')
                 apuesta=gamelib.input('Cuantas bazas vas a obtener '+jugador)
             else:
