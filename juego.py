@@ -10,8 +10,8 @@ class Juego:
         self.lista_jugadores=[]
         self.mazo=Pila()
         self.cantidad_jugadores=0
-        self.rondas=12
-        self.ronda_actual=0
+        self.rondas=13
+        self.ronda_actual=1
         self.manos_jugada=0
         self.apuestas=None
         self.triunfo=None
@@ -27,10 +27,14 @@ class Juego:
         for carta in mazo_aux:
             self.mazo.apilar(carta)
 
-        self.ronda_actual+=1
+       
 
         self.manos_jugada=0
-    
+        self.apuestas=None
+        self.triunfo=None
+        for jugador in self.lista_jugadores:
+            jugador.jugada=None
+
     def rotar_jugadores(self, n=-1):
         if len(self.lista_jugadores) == 0:
             self.lista_jugadores = self.lista_jugadores
@@ -39,10 +43,10 @@ class Juego:
     
     def inicializar_juego(self,cantidad_jugadores):
         palos = ('D', 'H', 'S', 'C')
-        valor = ('2','3','4','5','6','7','8','9', 'J', 'Q', 'K', 'A')
+        valores = ('2','3','4','5','6','7','8','9', 'J', 'Q', 'K', 'A')
         for palo in palos:
-            for numero in valor:
-                self.mazo.apilar((str(numero) + str(palo)))
+            for valor in valores:
+                self.mazo.apilar((str(valor) + str(palo)))
 
         self.cantidad_jugadores=cantidad_jugadores
         for numero_jugador in range(1,cantidad_jugadores+1):
@@ -60,14 +64,11 @@ class Juego:
             for jugador in self.lista_jugadores:
                 jugador.agregar_cartas(self.mazo.desapilar())
         
-        if self.ronda_actual==self.rondas:
-            while True:
-                self.triunfo=self.mazo.desapilar()
-                if self.triunfo[1]=='H':
-                    break
-                self.mazo.apilar(self.triunfo)
+        if self.ronda_actual==self.rondas-1:
+            self.triunfo='AH'
         else:
             self.triunfo=self.mazo.desapilar()
+        gamelib.say("Ronda "+ str(self.ronda_actual))
 
     def pedir_apuestas(self):
         apuestas={}
@@ -94,24 +95,28 @@ class Juego:
             if apuesta==jugador.bazas:
                 jugador.puntos+=10+(5*self.ronda_actual)
             jugador.bazas=0
-        self.lista_jugadores=self.lista_jugadores[1:] + self.lista_jugadores[:1]    
-    
+        self.lista_jugadores=self.lista_jugadores[1:] + self.lista_jugadores[:1]
+        for jugador in self.lista_jugadores:
+            print(jugador.puntos)   
+        self.ronda_actual+=1
+
     def determinar_ganador_ronda(self):
-        valor = ('2','3','4','5','6','7','8','9', 'J', 'Q', 'K', 'A')
-        indice=[]
+        valores = ('2','3','4','5','6','7','8','9', 'J', 'Q', 'K', 'A')
+        indices_para_ordenar=[]
         cartas_palo_principal=[]
         cartas_palo_triunfo=[]
         cartas_distintas=[]
-        ronda={}
+        cartas_ronda={}
         carta_principal_obtenida=False
+
         for jugador in self.lista_jugadores:
-            ronda[jugador]=jugador.jugada
+            cartas_ronda[jugador]=jugador.jugada
             if carta_principal_obtenida==False:
-                carta_principal=ronda[jugador]
+                carta_principal=cartas_ronda[jugador]
                 cartas_palo_principal.append(carta_principal)
                 carta_principal_obtenida=True
             
-        for carta in ronda.values():
+        for carta in cartas_ronda.values():
             if not carta==carta_principal:
                 if carta[1]==carta_principal[1]:
                     cartas_palo_principal.append(carta)
@@ -119,28 +124,29 @@ class Juego:
                     cartas_palo_triunfo.append(carta)
                 else:
                     cartas_distintas.append(carta)
-        
+
         if len(cartas_palo_principal)==1 and len(cartas_palo_triunfo)==0:
-            self.asignar_baza(ronda,carta_principal)
-            self.manos_jugada+=1
+            self.asignar_baza(cartas_ronda,carta_principal)
+            
         elif len(cartas_palo_triunfo)>0:
             for carta in cartas_palo_triunfo:
-                indice.append(valor.index(carta[0]))
-            indice=sorted(indice)
+                indices_para_ordenar.append(valores.index(carta[0]))
+            indice=sorted(indices_para_ordenar)
             for carta in cartas_palo_triunfo:
-                if carta[0]==valor[indice[0]]:
-                    self.asignar_baza(ronda,carta)
-                    self.manos_jugada+=1
+                if carta[0]==valores[indice[0]]:
+                    self.asignar_baza(cartas_ronda,carta)
+                   
                     break
         else:
             for carta in cartas_palo_principal:
-                indice.append(valor.index(carta[0]))
-            indice=sorted(indice)
+                indices_para_ordenar.append(valores.index(carta[0]))
+            indice=sorted(indices_para_ordenar)
             for carta in cartas_palo_principal:
-                if carta[0]==valor[indice[0]]:
-                    self.asignar_baza(ronda,carta)
-                    self.manos_jugada+=1
+                if carta[0]==valores[indice[0]]:
+                    self.asignar_baza(cartas_ronda,carta)
+                    
                     break
+        self.manos_jugada+=1
 
     def terminado(self):
         if self.ronda_actual==self.rondas:
@@ -159,7 +165,6 @@ class Juego:
                 for carta in jugador.cartas_usadas:
                     self.mazo.apilar(carta)
                 jugador.cartas_usadas=[]
-            self.manos_jugada+=1
             self.mazo.apilar(self.triunfo)
             self.triunfo=None
             return True

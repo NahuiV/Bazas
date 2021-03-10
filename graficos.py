@@ -1,9 +1,11 @@
 import gamelib
-
+LARGO,ANCHO=1230,700
+PIXELES_CARTA=50
 def dibujar_tablero():
     gamelib.draw_image('TABLERO.gif',0,0)
 
 def dibujar_cartas(juego):
+    gamelib.draw_image('cartas/'+juego.triunfo+'.gif', 1030, 70)
     for posicion,jugador in enumerate(juego.lista_jugadores):
         coordenadas=obtener_coordenadas(jugador.cartas,posicion)
         x,y,steps=coordenadas
@@ -12,10 +14,10 @@ def dibujar_cartas(juego):
                 gamelib.draw_image('cartas/'+carta+'.gif', x, y)
                 x+=steps
             elif posicion==1 or posicion==3:
-                gamelib.draw_image('cartas H\BACK H.gif', x, y)
+                gamelib.draw_image('cartas H/BACK H.gif', x, y)
                 y+=steps
             elif posicion==2:
-                gamelib.draw_image('cartas\BACK V.gif', x, y)
+                gamelib.draw_image('cartas/BACK V.gif', x, y)
                 x+=steps
 
 def dibujar_carta_centro(juego):
@@ -47,7 +49,8 @@ def dibujar_carta_centro(juego):
                 gamelib.draw_image('cartas H/'+jugador.jugada+'.gif', 660, 320) 
 
 def graficar_ganador(puntajes):
-    for i,punto,nombre in enumerate(puntajes):
+    for i,puntuaciones in enumerate(puntajes):
+        nombre,punto=puntuaciones
         if i==0:
             gamelib.draw_text(f'{nombre}-{punto}', 400, 550)
         elif i==1:
@@ -69,26 +72,16 @@ def obtener_coordenadas(cartas,posicion):
         return 1100,calcular_y_inicial(cartas),20
 
 def calcular_y_inicial(cartas):
-    medio_Y=700/2
     py_y=30
-    if not es_par(len(cartas)):
-        medio_Y-=py_y/2
-        y=medio_Y-((len(cartas)-1)*py_y)
+    if (len(cartas) % 2) == 0:
+            y = ANCHO/2 - (len(cartas)/ 2) * py_y
     else:
-        y=medio_Y-((len(cartas)/2)*py_y)
+            y = ANCHO/2 - (py_y/ 2) - (((len(cartas)-1) / 2)*py_y)
     return y
 
 def calcular_x_inicial(cartas):
-    medio_H=1230/2
-    px_x=50
-    if not es_par(len(cartas)):
-        medio_H-=px_x/2
-        x=medio_H-((len(cartas)-1)*px_x)
+    if (len(cartas) % 2) == 0:
+            coord_x1 = LARGO/2 - (len(cartas)/ 2) * PIXELES_CARTA
     else:
-        x=medio_H-((len(cartas)/2)*px_x)
-    return x
-    
-def es_par(numero):
-    if numero % 2==0:
-        return True
-    return False
+            coord_x1 = LARGO/2 - (PIXELES_CARTA/ 2) - (((len(cartas)-1) / 2)*PIXELES_CARTA)
+    return coord_x1

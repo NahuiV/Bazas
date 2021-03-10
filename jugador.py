@@ -21,16 +21,17 @@ class Jugador:
         return t
     
     def buscar_carta(self, ev_x, x1, x2):
-        contador_i = 0
-        while not x1 < ev_x < x1+PIXELES_CARTA and ev_x < x2:
-            x1 += PIXELES_CARTA
-            contador_i += 1
-        return contador_i
-    
+        contador=0
+        while not x1==x2:
+            if ev_x >= x1 and ev_x<x1+PIXELES_CARTA:
+                return contador
+            x1+=PIXELES_CARTA
+            contador+=1
+            
     def pedir_jugada(self):
         if (len(self.cartas) % 2) == 0:
-            coord_x1 = LARGO/2 - (len(self.cartas)/ 2) * PIXELES_CARTA
-            coord_x2 = LARGO/2 + (len(self.cartas)/ 2) * PIXELES_CARTA
+            coord_x1 = (LARGO/2 - (len(self.cartas)/ 2) * PIXELES_CARTA)
+            coord_x2 = (LARGO/2 + (len(self.cartas)/ 2) * PIXELES_CARTA)
         else:
             coord_x1 = LARGO/2 - (PIXELES_CARTA/ 2) - (((len(self.cartas)-1) / 2)*PIXELES_CARTA)
             coord_x2 = LARGO/2 + (PIXELES_CARTA/ 2) + (((len(self.cartas)-1) / 2)*PIXELES_CARTA)
@@ -39,7 +40,7 @@ class Jugador:
             ev = gamelib.wait()
             if ev.type == gamelib.EventType.ButtonPress:
                 x, y = ev.x, ev.y
-                if  y >600  and coord_x1 < x < coord_x2:
+                if  y >600  and ( x < coord_x2 and x > coord_x1):
                     break
         
         carta = self.buscar_carta(x, coord_x1, coord_x2)
