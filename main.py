@@ -34,7 +34,12 @@ def main():
         bazas.mezclar_mazo()
         bazas.repartir_cartas()
         mostrar_estado_juego(bazas)
-        bazas.pedir_apuestas()
+        bazas.suma_apuestas=0
+        for indice,jugador in enumerate(bazas.lista_jugadores):
+            jugador.pedir_apuesta(indice,bazas.suma_apuestas,bazas)
+            bazas.rotar_jugadores()
+            mostrar_estado_juego(bazas)
+        #bazas.pedir_apuestas()
         while not bazas.ronda_terminada():
             mostrar_estado_juego(bazas)
             for jugador in bazas.lista_jugadores:

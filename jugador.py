@@ -12,14 +12,32 @@ class Jugador:
         self.bazas=0
         self.puntos=0
         self.jugada=None
+        self.apuesta=0
 
     def agregar_cartas(self,carta):
         self.cartas.append(carta)
     
-    def __str__(self):
-        t=self.nombre
-        return t
+    def validar_apuesta(self,apuesta,ronda_actual):  
+        while True:
+            if apuesta==None or apuesta.isdigit()==False or (int(apuesta) > ronda_actual) or (0>int(apuesta)):
+                gamelib.say('Opcion incorrecta, vuelva a ingresar ')
+                apuesta=gamelib.input('Cuantas bazas vas a obtener '+self.nombre)
+            else:
+                break
+        return int(apuesta)
     
+    def pedir_apuesta(self,indice,suma_apuesta,bazas):
+        apuesta=gamelib.input('Cuantas bazas vas a obtener '+self.nombre)
+        apuesta=self.validar_apuesta(apuesta,bazas.ronda_actual)
+        if indice==bazas.cantidad_jugadores-1:
+            if bazas.suma_apuestas+int(apuesta)==bazas.ronda_actual:
+                gamelib.say('La apuesta ingresada iguala el numero de ronda actual,ingrese un valor entre 0 y '+ str(self.ronda_actual)+'')
+            else:
+                self.apuesta=apuesta
+        else:
+            self.apuesta=apuesta
+            bazas.suma_apuestas+=int(apuesta)
+               
     def buscar_carta(self, ev_x, x1, x2):
         contador=0
         while not x1==x2:

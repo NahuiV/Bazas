@@ -13,6 +13,7 @@ class Juego:
         self.rondas=13
         self.ronda_actual=1
         self.manos_jugada=0
+        self.suma_apuestas=0
         self.apuestas=None
         self.triunfo=None
 
@@ -75,24 +76,26 @@ class Juego:
         suma_apuesta=0
         for contador,jugador in enumerate(self.lista_jugadores):
             while True:
-                apuesta=gamelib.input('Cuantas bazas vas a obtener '+jugador.nombre)
-                apuesta=self.validar_apuesta(jugador.nombre,apuesta)
+                a=jugador.pedir_apuesta()
+                a=self.validar_apuesta(jugador.nombre,a)
+                #apuesta=gamelib.input('Cuantas bazas vas a obtener '+jugador.nombre)
+                #apuesta=self.validar_apuesta(jugador.nombre,apuesta)
                 if contador==self.cantidad_jugadores-1:
-                    if suma_apuesta+int(apuesta)==self.ronda_actual:
+                    if suma_apuesta+int(a)==self.ronda_actual:
                         gamelib.say('La apuesta ingresada iguala el numero de ronda actual,ingrese un valor entre 0 y '+ str(self.ronda_actual)+'')
                     else:
-                        apuestas[jugador.nombre]=int(apuesta)
+                        apuestas[jugador.nombre]=int(a)
                         break
                 else:
-                    apuestas[jugador.nombre]=int(apuesta)
-                    suma_apuesta+=int(apuesta)
+                    apuestas[jugador.nombre]=int(a)
+                    suma_apuesta+=int(a)
                     break
+            self.rotar_jugadores()
         self.apuestas=apuestas
 
     def contabilizar_puntos_ronda(self):
         for jugador in self.lista_jugadores:
-            apuesta=self.apuestas[jugador.nombre]
-            if apuesta==jugador.bazas:
+            if jugador.apuesta==jugador.bazas:
                 jugador.puntos+=10+(5*self.ronda_actual)
             jugador.bazas=0
         self.lista_jugadores=self.lista_jugadores[1:] + self.lista_jugadores[:1]
